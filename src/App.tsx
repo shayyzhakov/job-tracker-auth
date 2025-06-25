@@ -7,9 +7,8 @@ import { jwtDecode } from 'jwt-decode'
 
 function App() {
   const [token, setToken] = useState<string | null>(null)
-  const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
-  const [copied, setCopied] = useState<'access' | 'refresh' | null>(null)
+  const [copied, setCopied] = useState<'access' | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -17,7 +16,6 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setToken(session?.access_token ?? null)
-      setRefreshToken(session?.refresh_token ?? null)
       if (session?.access_token) {
         try {
           const decoded: any = jwtDecode(session.access_token)
@@ -38,7 +36,7 @@ function App() {
     }
   }, [])
 
-  const handleCopy = (text: string, tokenType: 'access' | 'refresh') => {
+  const handleCopy = (text: string, tokenType: 'access') => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -72,19 +70,6 @@ function App() {
             <code>{token}</code>
             <div className="copy-overlay">
               <span>{copied === 'access' ? 'Copied!' : 'Copy'}</span>
-            </div>
-          </div>
-
-          <h4>Refresh Token:</h4>
-          <div
-            className="token-container"
-            onClick={() =>
-              refreshToken && handleCopy(refreshToken, 'refresh')
-            }
-          >
-            <code>{refreshToken}</code>
-            <div className="copy-overlay">
-              <span>{copied === 'refresh' ? 'Copied!' : 'Copy'}</span>
             </div>
           </div>
         </div>
