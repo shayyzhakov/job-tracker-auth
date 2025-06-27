@@ -37,18 +37,34 @@ function App() {
 
   return (
     <div style={{ maxWidth: 420, margin: '50px auto' }}>
-      <Auth
-        supabaseClient={supabase}
-        appearance={{ theme: ThemeSupa }}
-        providers={['google']}
-      />
+      {!(email || (accessToken && refreshToken)) && (
+        <Auth
+          supabaseClient={supabase}
+          appearance={{ theme: ThemeSupa }}
+          providers={['google']}
+        />
+      )}
 
       {(email || (accessToken && refreshToken)) && (
-        <LoginDataCard
-          email={email}
-          accessToken={accessToken}
-          refreshToken={refreshToken}
-        />
+        <>
+          <LoginDataCard
+            email={email}
+            accessToken={accessToken}
+            refreshToken={refreshToken}
+          />
+          <button
+            className="signin-btn secondary"
+            style={{ marginTop: 16 }}
+            onClick={async () => {
+              await supabase.auth.signOut()
+              setAccessToken(null)
+              setRefreshToken(null)
+              setEmail(null)
+            }}
+          >
+            Log out
+          </button>
+        </>
       )}
     </div>
   )
