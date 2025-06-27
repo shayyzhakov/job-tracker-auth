@@ -65,3 +65,84 @@
 .token-container:hover .copy-overlay {
   opacity: 1;
 }
+
+/* Minimal, clean sign-in card styles */
+.signin-card {
+  padding: 2rem 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  max-width: 420px;
+  margin: 2.5rem auto 0 auto;
+  box-shadow: none;
+}
+
+.signin-email {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 1.5rem 0;
+  text-align: left;
+}
+
+.signin-section-title {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #666;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.signin-btn {
+  display: block;
+  width: 100%;
+  background: rgb(63, 207, 142);
+  color: #fff;
+  border: 1px solid rgb(52, 178, 123);
+  border-radius: 6px;
+  padding: 0.9rem 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 0.7rem;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+.signin-btn:hover {
+  background: #2ebd89;
+  border-color: rgb(52, 178, 123);
+}
+
+.signin-btn.secondary {
+  background: #f8f8f8;
+  color: #444;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0.7rem;
+}
+.signin-btn.secondary:hover {
+  background: #ededed;
+  color: #222;
+  border-color: #cccccc;
+}
+
+.signin-muted {
+  color: #aaa;
+  font-size: 0.97rem;
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  .signin-card {
+    padding: 1.2rem 0.5rem;
+    max-width: 98vw;
+  }
+  .signin-email {
+    font-size: 1rem;
+  }
+  .signin-btn {
+    font-size: 0.98rem;
+    padding: 0.8rem 0;
+  }
+}

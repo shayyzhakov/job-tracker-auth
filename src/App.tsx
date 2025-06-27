@@ -5,11 +5,13 @@ import { supabase } from './supabaseClient'
 import './App.css'
 import { jwtDecode } from 'jwt-decode'
 
+type CopiedType = 'access' | 'refresh' | 'script' | 'scriptFirst' | 'email' | null;
+
 function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
-  const [copied, setCopied] = useState<'access' | 'refresh' | 'script' | null>(null)
+  const [copied, setCopied] = useState<CopiedType>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -39,7 +41,9 @@ function App() {
     }
   }, [])
 
-  const handleCopy = (text: string, tokenType: 'access' | 'refresh' | 'script') => {
+  type TokenType = 'script' | 'scriptFirst' | 'email';
+
+  const handleCopy = (text: string, tokenType: TokenType) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -57,6 +61,16 @@ function App() {
 EOF`
     : '';
 
+  const shellScriptFirstTime = accessToken && refreshToken
+    ? `mkdir -p ~/.config/job-tracker-mcp && \
+cat > ~/.config/job-tracker-mcp/config.json <<EOF
+{
+  "access_token": "${accessToken}",
+  "refresh_token": "${refreshToken}"
+}
+EOF`
+    : '';
+
   return (
     <div style={{ maxWidth: 420, margin: '50px auto' }}>
       <Auth
@@ -65,58 +79,37 @@ EOF`
         providers={['google']}
       />
 
-      {email && (
-        <div style={{ marginTop: '1rem' }}>
-          <h4>Email:</h4>
-          <div style={{ marginBottom: '1rem' }}>{email}</div>
-        </div>
-      )}
-
-      {accessToken && (
-        <div style={{ marginTop: '1rem', wordBreak: 'break-all' }}>
-          <h4>Access Token:</h4>
-          <div
-            className="token-container"
-            onClick={() => accessToken && handleCopy(accessToken, 'access')}
-          >
-            <code>{accessToken}</code>
-            <div className="copy-overlay">
-              <span>{copied === 'access' ? 'Copied!' : 'Copy'}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {refreshToken && (
-        <div style={{ marginTop: '1rem', wordBreak: 'break-all' }}>
-          <h4>Refresh Token:</h4>
-          <div
-            className="token-container"
-            onClick={() => refreshToken && handleCopy(refreshToken, 'refresh')}
-          >
-            <code>{refreshToken}</code>
-            <div className="copy-overlay">
-              <span>{copied === 'refresh' ? 'Copied!' : 'Copy'}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {accessToken && refreshToken && (
-        <div style={{ marginTop: '2rem', wordBreak: 'break-all' }}>
-          <h4>Copy-paste config script:</h4>
-          <div
-            className="token-container"
-            onClick={() => handleCopy(shellScript, 'script')}
-          >
-            <code style={{ whiteSpace: 'pre-wrap' }}>{shellScript}</code>
-            <div className="copy-overlay">
-              <span>{copied === 'script' ? 'Copied!' : 'Copy'}</span>
-            </div>
-          </div>
-          <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
-            This script will overwrite your config file with the current tokens.
-          </div>
+      {(email || (accessToken && refreshToken)) && (
+        <div className="signin-card">
+          {email && (
+            <div className="signin-email">{email}</div>
+          )}
+          {accessToken && refreshToken && (
+            <>
+              <div className="signin-section-title">Paste this script in your terminal:</div>
+              <button
+                className="signin-btn"
+                onClick={() => handleCopy(shellScript, 'script')}
+              >
+                {copied === 'script' ? 'Copied!' : 'Copy script'}
+              </button>
+              <div className="signin-muted">
+                Use this if you've already set up the config directory before.
+              </div>
+              <div className="signin-section-title" style={{ marginTop: 18 }}>
+                First time using? Use this script instead:
+              </div>
+              <button
+                className="signin-btn secondary"
+                onClick={() => handleCopy(shellScriptFirstTime, 'scriptFirst')}
+              >
+                {copied === 'scriptFirst' ? 'Copied!' : 'Copy first-time setup script'}
+              </button>
+              <div className="signin-muted">
+                This will create the config directory if it doesn't exist, then write your tokens.
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
