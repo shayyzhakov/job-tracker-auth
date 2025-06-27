@@ -6,16 +6,19 @@ import './App.css'
 import { jwtDecode } from 'jwt-decode'
 
 function App() {
-  const [token, setToken] = useState<string | null>(null)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+  const [refreshToken, setRefreshToken] = useState<string | null>(null)
   const [email, setEmail] = useState<string | null>(null)
-  const [copied, setCopied] = useState<'access' | null>(null)
+  const [copied, setCopied] = useState<'access' | 'refresh' | 'script' | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setToken(session?.access_token ?? null)
+      setAccessToken(session?.access_token ?? null)
+      setRefreshToken(session?.refresh_token ?? null)
+      console.log(session?.access_token)
       if (session?.access_token) {
         try {
           const decoded: any = jwtDecode(session.access_token)
@@ -36,7 +39,7 @@ function App() {
     }
   }, [])
 
-  const handleCopy = (text: string, tokenType: 'access') => {
+  const handleCopy = (text: string, tokenType: 'access' | 'refresh' | 'script') => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
@@ -44,6 +47,15 @@ function App() {
     setCopied(tokenType)
     timeoutRef.current = setTimeout(() => setCopied(null), 1500)
   }
+
+  const shellScript = accessToken && refreshToken
+    ? `cat > ~/.config/job-tracker-mcp/config.json <<EOF
+{
+  "access_token": "${accessToken}",
+  "refresh_token": "${refreshToken}"
+}
+EOF`
+    : '';
 
   return (
     <div style={{ maxWidth: 420, margin: '50px auto' }}>
@@ -60,17 +72,50 @@ function App() {
         </div>
       )}
 
-      {token && (
+      {accessToken && (
         <div style={{ marginTop: '1rem', wordBreak: 'break-all' }}>
           <h4>Access Token:</h4>
           <div
             className="token-container"
-            onClick={() => token && handleCopy(token, 'access')}
+            onClick={() => accessToken && handleCopy(accessToken, 'access')}
           >
-            <code>{token}</code>
+            <code>{accessToken}</code>
             <div className="copy-overlay">
               <span>{copied === 'access' ? 'Copied!' : 'Copy'}</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {refreshToken && (
+        <div style={{ marginTop: '1rem', wordBreak: 'break-all' }}>
+          <h4>Refresh Token:</h4>
+          <div
+            className="token-container"
+            onClick={() => refreshToken && handleCopy(refreshToken, 'refresh')}
+          >
+            <code>{refreshToken}</code>
+            <div className="copy-overlay">
+              <span>{copied === 'refresh' ? 'Copied!' : 'Copy'}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {accessToken && refreshToken && (
+        <div style={{ marginTop: '2rem', wordBreak: 'break-all' }}>
+          <h4>Copy-paste config script:</h4>
+          <div
+            className="token-container"
+            onClick={() => handleCopy(shellScript, 'script')}
+          >
+            <code style={{ whiteSpace: 'pre-wrap' }}>{shellScript}</code>
+            <div className="copy-overlay">
+              <span>{copied === 'script' ? 'Copied!' : 'Copy'}</span>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+            This script will overwrite your config file with the current tokens.
           </div>
         </div>
       )}
