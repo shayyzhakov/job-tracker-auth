@@ -35,25 +35,6 @@ function App() {
     }
   }, [])
 
-  const shellScript = accessToken && refreshToken
-    ? `cat > ~/.config/job-tracker-mcp/config.json <<EOF
-{
-  "access_token": "${accessToken}",
-  "refresh_token": "${refreshToken}"
-}
-EOF`
-    : '';
-
-  const shellScriptFirstTime = accessToken && refreshToken
-    ? `mkdir -p ~/.config/job-tracker-mcp && \
-cat > ~/.config/job-tracker-mcp/config.json <<EOF
-{
-  "access_token": "${accessToken}",
-  "refresh_token": "${refreshToken}"
-}
-EOF`
-    : '';
-
   return (
     <div style={{ maxWidth: 420, margin: '50px auto' }}>
       <Auth
